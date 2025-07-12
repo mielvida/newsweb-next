@@ -1,36 +1,109 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 뉴스웹 - Next.js 뉴스 웹사이트
 
-## Getting Started
+coinreaders.com과 유사한 뉴스 웹사이트입니다.
 
-First, run the development server:
+## 기술 스택
 
+- **Frontend**: Next.js 15, TypeScript, Tailwind CSS
+- **Backend**: Next.js API Routes, Prisma ORM
+- **Database**: PlanetScale (MySQL)
+- **Authentication**: JWT
+- **Deployment**: Vercel
+
+## 주요 기능
+
+- 📰 뉴스 목록 및 상세 보기
+- 🏷️ 카테고리별 필터링
+- 🔥 인기 뉴스 (조회수 기준)
+- 👨‍💼 관리자 로그인 및 뉴스 관리 (CRUD)
+- 📱 반응형 디자인
+
+## 로컬 개발
+
+### 1. 의존성 설치
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. 환경변수 설정
+`.env.local` 파일을 생성하고 다음 내용을 추가:
+```env
+DATABASE_URL="your-planetscale-connection-string"
+JWT_SECRET="your-jwt-secret"
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 3. 데이터베이스 설정
+```bash
+npx prisma generate
+npx prisma db push
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 4. 초기 데이터 생성
+```bash
+node scripts/createAdmin.js
+node scripts/createCategories.js
+node scripts/createSampleNews.js
+```
 
-## Learn More
+### 5. 개발 서버 실행
+```bash
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+## 관리자 계정
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **이메일**: nsadmin@ns.com
+- **비밀번호**: nsadmin4123
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## API 엔드포인트
 
-## Deploy on Vercel
+### 인증
+- `POST /api/auth/login` - 관리자 로그인
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### 뉴스
+- `GET /api/news` - 뉴스 목록 조회
+- `POST /api/news` - 뉴스 작성 (관리자)
+- `GET /api/news/[id]` - 뉴스 상세 조회
+- `PUT /api/news/[id]` - 뉴스 수정 (관리자)
+- `DELETE /api/news/[id]` - 뉴스 삭제 (관리자)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### 카테고리
+- `GET /api/categories` - 카테고리 목록 조회
+- `POST /api/categories` - 카테고리 생성 (관리자)
+
+## 배포
+
+### Vercel 배포
+
+1. Vercel CLI 설치
+```bash
+npm install -g vercel
+```
+
+2. 배포
+```bash
+vercel
+```
+
+3. 환경변수 설정 (Vercel 대시보드)
+- `DATABASE_URL`: PlanetScale 연결 문자열
+- `JWT_SECRET`: JWT 시크릿 키
+
+## 프로젝트 구조
+
+```
+newsweb-next/
+├── app/
+│   ├── api/           # API 라우트
+│   ├── admin/         # 관리자 페이지
+│   ├── news/          # 뉴스 상세 페이지
+│   └── page.tsx       # 홈페이지
+├── prisma/
+│   └── schema.prisma  # 데이터베이스 스키마
+├── scripts/           # 초기 데이터 생성 스크립트
+└── public/            # 정적 파일
+```
+
+## 라이선스
+
+MIT License
