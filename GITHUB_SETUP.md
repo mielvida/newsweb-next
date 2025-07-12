@@ -53,7 +53,7 @@ git push -u origin main
 
 #### DATABASE_URL:
 - **Name**: `DATABASE_URL`
-- **Value**: `mysql://twzunzgzy40tdkdey44m:pscale_pw_iGZjXnCuTFroq25mIWF8H3DWE4CkjkIxO421K6Pg2OB@gcp.connect.psdb.cloud/newsweb?sslaccept=strict`
+- **Value**: `[YOUR_PLANETSCALE_DATABASE_URL]`
 - **Environment**: ✅ Production, ✅ Preview, ✅ Development
 
 ### 3단계: 배포

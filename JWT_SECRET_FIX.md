@@ -36,7 +36,7 @@ Environment Variable "JWT_SECRET" references Secret "jwt-secret", which does not
 2. **없다면 추가:**
    ```
    Name: DATABASE_URL
-   Value: mysql://twzunzgzy40tdkdey44m:pscale_pw_iGZjXnCuTFroq25mIWF8H3DWE4CkjkIxO421K6Pg2OB@gcp.connect.psdb.cloud/newsweb?sslaccept=strict
+   Value: [YOUR_PLANETSCALE_DATABASE_URL]
    Environment: Production, Preview, Development (모두 체크)
    ```
 
@@ -62,7 +62,7 @@ Environment Variable "JWT_SECRET" references Secret "jwt-secret", which does not
 4. **환경변수 설정:**
    ```
    JWT_SECRET = 5f6fe6209484b2563dbcdbf6e821545a929561581f6beecf39adc543f382e777abf05124f73deaca032dbbb6e55fd1b30c0fe3c514da8fbbddfcc5300fe66cae
-   DATABASE_URL = mysql://twzunzgzy40tdkdey44m:pscale_pw_iGZjXnCuTFroq25mIWF8H3DWE4CkjkIxO421K6Pg2OB@gcp.connect.psdb.cloud/newsweb?sslaccept=strict
+DATABASE_URL = [YOUR_PLANETSCALE_DATABASE_URL]
    ```
 5. **"Deploy" 클릭**
 
