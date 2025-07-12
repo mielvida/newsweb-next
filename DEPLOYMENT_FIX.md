@@ -16,7 +16,7 @@ Environment Variable "JWT_SECRET" references Secret "jwt-secret", which does not
 
 #### JWT_SECRET 추가:
 - **Name**: `JWT_SECRET`
-- **Value**: `5f6fe6209484b2563dbcdbf6e821545a929561581f6beecf39adc543f382e777abf05124f73deaca032dbbb6e55fd1b30c0fe3c514da8fbbddfcc5300fe66cae`
+- **Value**: `[YOUR_JWT_SECRET_VALUE]`
 - **Environment**: ✅ Production, ✅ Preview, ✅ Development
 
 #### DATABASE_URL 추가:
@@ -46,8 +46,8 @@ Environment Variable "JWT_SECRET" references Secret "jwt-secret", which does not
 - ✅ API: `https://your-project.vercel.app/api/news`
 
 ### 관리자 로그인:
-- **이메일**: `nsadmin@ns.com`
-- **비밀번호**: `nsadmin4123`
+- **이메일**: `[YOUR_ADMIN_EMAIL]`
+- **비밀번호**: `[YOUR_ADMIN_PASSWORD]`
 
 ## 🛠️ 문제 해결
 

@@ -26,7 +26,7 @@ Environment Variable "JWT_SECRET" references Secret "jwt-secret", which does not
 2. **다음 정보 입력:**
    ```
    Name: JWT_SECRET
-   Value: 5f6fe6209484b2563dbcdbf6e821545a929561581f6beecf39adc543f382e777abf05124f73deaca032dbbb6e55fd1b30c0fe3c514da8fbbddfcc5300fe66cae
+   Value: [YOUR_JWT_SECRET_VALUE]
    Environment: Production, Preview, Development (모두 체크)
    ```
 3. **"Save" 클릭**
@@ -61,8 +61,8 @@ Environment Variable "JWT_SECRET" references Secret "jwt-secret", which does not
    - **Framework**: Next.js (자동 감지)
 4. **환경변수 설정:**
    ```
-   JWT_SECRET = 5f6fe6209484b2563dbcdbf6e821545a929561581f6beecf39adc543f382e777abf05124f73deaca032dbbb6e55fd1b30c0fe3c514da8fbbddfcc5300fe66cae
-DATABASE_URL = [YOUR_PLANETSCALE_DATABASE_URL]
+   JWT_SECRET = [YOUR_JWT_SECRET_VALUE]
+   DATABASE_URL = [YOUR_PLANETSCALE_DATABASE_URL]
    ```
 5. **"Deploy" 클릭**
 
@@ -74,8 +74,8 @@ DATABASE_URL = [YOUR_PLANETSCALE_DATABASE_URL]
 - **API 테스트**: `https://your-project.vercel.app/api/news`
 
 ### 관리자 계정:
-- **이메일**: `nsadmin@ns.com`
-- **비밀번호**: `nsadmin4123`
+- **이메일**: `[YOUR_ADMIN_EMAIL]`
+- **비밀번호**: `[YOUR_ADMIN_PASSWORD]`
 
 ## 🛠️ 문제 해결
 

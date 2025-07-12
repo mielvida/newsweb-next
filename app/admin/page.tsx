@@ -10,7 +10,7 @@ interface News {
   views: number;
   createdAt: string;
   author: { name: string };
-  category: { name: string };
+  category: { id: string; name: string };
 }
 
 interface Category {

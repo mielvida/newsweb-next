@@ -7,10 +7,10 @@ const prisma = new PrismaClient();
 // 뉴스 상세 조회
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await context.params;
 
     const news = await prisma.news.findUnique({
       where: { id },
@@ -19,7 +19,7 @@ export async function GET(
           select: { name: true }
         },
         category: {
-          select: { name: true }
+          select: { id: true, name: true }
         }
       }
     });
@@ -51,7 +51,7 @@ export async function GET(
 // 뉴스 수정 (관리자만)
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const authHeader = request.headers.get('authorization');
@@ -72,7 +72,7 @@ export async function PUT(
       );
     }
 
-    const { id } = params;
+    const { id } = await context.params;
     const { title, content, categoryId } = await request.json();
 
     if (!title || !content || !categoryId) {
@@ -105,7 +105,7 @@ export async function PUT(
           select: { name: true }
         },
         category: {
-          select: { name: true }
+          select: { id: true, name: true }
         }
       }
     });
@@ -127,7 +127,7 @@ export async function PUT(
 // 뉴스 삭제 (관리자만)
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const authHeader = request.headers.get('authorization');
@@ -148,7 +148,7 @@ export async function DELETE(
       );
     }
 
-    const { id } = params;
+    const { id } = await context.params;
 
     const existingNews = await prisma.news.findUnique({
       where: { id }

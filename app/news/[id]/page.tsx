@@ -13,18 +13,29 @@ interface News {
   category: { name: string };
 }
 
-export default function NewsDetail({ params }: { params: { id: string } }) {
+export default function NewsDetail({ params }: { params: Promise<{ id: string }> }) {
   const [news, setNews] = useState<News | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [newsId, setNewsId] = useState<string>('');
 
   useEffect(() => {
-    fetchNews();
-  }, [params.id]);
+    const getParams = async () => {
+      const resolvedParams = await params;
+      setNewsId(resolvedParams.id);
+    };
+    getParams();
+  }, [params]);
+
+  useEffect(() => {
+    if (newsId) {
+      fetchNews();
+    }
+  }, [newsId]);
 
   const fetchNews = async () => {
     try {
-      const response = await fetch(`/api/news/${params.id}`);
+      const response = await fetch(`/api/news/${newsId}`);
       if (!response.ok) {
         throw new Error('뉴스를 찾을 수 없습니다.');
       }
