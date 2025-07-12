@@ -6,13 +6,22 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
-const prisma = globalForPrisma.prisma ?? new PrismaClient();
+const prisma = globalForPrisma.prisma ?? new PrismaClient({
+  datasources: {
+    db: {
+      url: process.env.DATABASE_URL,
+    },
+  },
+});
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
 
 // 뉴스 목록 조회
 export async function GET(request: NextRequest) {
   try {
+    // 데이터베이스 연결 확인
+    await prisma.$connect();
+    
     const { searchParams } = new URL(request.url);
     const categoryId = searchParams.get('categoryId');
     const page = parseInt(searchParams.get('page') || '1');
@@ -51,10 +60,21 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('Get news error:', error);
+    
+    // 데이터베이스 연결 에러인 경우
+    if (error instanceof Error && error.message.includes('Authentication failed')) {
+      return NextResponse.json(
+        { error: '데이터베이스 연결에 실패했습니다. 관리자에게 문의하세요.' },
+        { status: 503 }
+      );
+    }
+    
     return NextResponse.json(
       { error: '서버 오류가 발생했습니다.' },
       { status: 500 }
     );
+  } finally {
+    await prisma.$disconnect();
   }
 }
 
@@ -88,6 +108,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // 데이터베이스 연결 확인
+    await prisma.$connect();
+
     const news = await prisma.news.create({
       data: {
         title,
@@ -112,9 +135,20 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Create news error:', error);
+    
+    // 데이터베이스 연결 에러인 경우
+    if (error instanceof Error && error.message.includes('Authentication failed')) {
+      return NextResponse.json(
+        { error: '데이터베이스 연결에 실패했습니다. 관리자에게 문의하세요.' },
+        { status: 503 }
+      );
+    }
+    
     return NextResponse.json(
       { error: '서버 오류가 발생했습니다.' },
       { status: 500 }
     );
+  } finally {
+    await prisma.$disconnect();
   }
 } 

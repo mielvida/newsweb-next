@@ -6,7 +6,13 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
-const prisma = globalForPrisma.prisma ?? new PrismaClient();
+const prisma = globalForPrisma.prisma ?? new PrismaClient({
+  datasources: {
+    db: {
+      url: process.env.DATABASE_URL,
+    },
+  },
+});
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
 
@@ -16,6 +22,9 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // 데이터베이스 연결 확인
+    await prisma.$connect();
+    
     const { id } = await params;
 
     const news = await prisma.news.findUnique({
@@ -47,10 +56,21 @@ export async function GET(
 
   } catch (error) {
     console.error('Get news detail error:', error);
+    
+    // 데이터베이스 연결 에러인 경우
+    if (error instanceof Error && error.message.includes('Authentication failed')) {
+      return NextResponse.json(
+        { error: '데이터베이스 연결에 실패했습니다. 관리자에게 문의하세요.' },
+        { status: 503 }
+      );
+    }
+    
     return NextResponse.json(
       { error: '서버 오류가 발생했습니다.' },
       { status: 500 }
     );
+  } finally {
+    await prisma.$disconnect();
   }
 }
 
@@ -88,6 +108,9 @@ export async function PUT(
       );
     }
 
+    // 데이터베이스 연결 확인
+    await prisma.$connect();
+
     const existingNews = await prisma.news.findUnique({
       where: { id }
     });
@@ -123,10 +146,21 @@ export async function PUT(
 
   } catch (error) {
     console.error('Update news error:', error);
+    
+    // 데이터베이스 연결 에러인 경우
+    if (error instanceof Error && error.message.includes('Authentication failed')) {
+      return NextResponse.json(
+        { error: '데이터베이스 연결에 실패했습니다. 관리자에게 문의하세요.' },
+        { status: 503 }
+      );
+    }
+    
     return NextResponse.json(
       { error: '서버 오류가 발생했습니다.' },
       { status: 500 }
     );
+  } finally {
+    await prisma.$disconnect();
   }
 }
 
@@ -156,6 +190,9 @@ export async function DELETE(
 
     const { id } = await params;
 
+    // 데이터베이스 연결 확인
+    await prisma.$connect();
+
     const existingNews = await prisma.news.findUnique({
       where: { id }
     });
@@ -177,9 +214,20 @@ export async function DELETE(
 
   } catch (error) {
     console.error('Delete news error:', error);
+    
+    // 데이터베이스 연결 에러인 경우
+    if (error instanceof Error && error.message.includes('Authentication failed')) {
+      return NextResponse.json(
+        { error: '데이터베이스 연결에 실패했습니다. 관리자에게 문의하세요.' },
+        { status: 503 }
+      );
+    }
+    
     return NextResponse.json(
       { error: '서버 오류가 발생했습니다.' },
       { status: 500 }
     );
+  } finally {
+    await prisma.$disconnect();
   }
 } 

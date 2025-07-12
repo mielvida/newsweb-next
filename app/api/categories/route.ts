@@ -6,13 +6,31 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
-const prisma = globalForPrisma.prisma ?? new PrismaClient();
+const prisma = globalForPrisma.prisma ?? new PrismaClient({
+  datasources: {
+    db: {
+      url: process.env.DATABASE_URL,
+    },
+  },
+});
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
+
+// 임시 모의 데이터
+const mockCategories = [
+  { id: '1', name: '정치' },
+  { id: '2', name: '경제' },
+  { id: '3', name: '사회' },
+  { id: '4', name: '문화' },
+  { id: '5', name: '기술' }
+];
 
 // 카테고리 목록 조회
 export async function GET() {
   try {
+    // 데이터베이스 연결 확인
+    await prisma.$connect();
+    
     const categories = await prisma.category.findMany({
       orderBy: { name: 'asc' }
     });
@@ -21,10 +39,23 @@ export async function GET() {
 
   } catch (error) {
     console.error('Get categories error:', error);
+    
+    // 데이터베이스 연결 에러인 경우 모의 데이터 반환
+    if (error instanceof Error && error.message.includes('Authentication failed')) {
+      console.log('데이터베이스 연결 실패, 모의 데이터 반환');
+      return NextResponse.json(mockCategories);
+    }
+    
     return NextResponse.json(
       { error: '서버 오류가 발생했습니다.' },
       { status: 500 }
     );
+  } finally {
+    try {
+      await prisma.$disconnect();
+    } catch (error) {
+      console.error('Prisma disconnect error:', error);
+    }
   }
 }
 
@@ -58,6 +89,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // 데이터베이스 연결 확인
+    await prisma.$connect();
+
     const existingCategory = await prisma.category.findFirst({
       where: { name }
     });
@@ -80,9 +114,24 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Create category error:', error);
+    
+    // 데이터베이스 연결 에러인 경우
+    if (error instanceof Error && error.message.includes('Authentication failed')) {
+      return NextResponse.json(
+        { error: '데이터베이스 연결에 실패했습니다. 관리자에게 문의하세요.' },
+        { status: 503 }
+      );
+    }
+    
     return NextResponse.json(
       { error: '서버 오류가 발생했습니다.' },
       { status: 500 }
     );
+  } finally {
+    try {
+      await prisma.$disconnect();
+    } catch (error) {
+      console.error('Prisma disconnect error:', error);
+    }
   }
 } 

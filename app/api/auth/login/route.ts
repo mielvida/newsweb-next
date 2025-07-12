@@ -7,7 +7,13 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
-const prisma = globalForPrisma.prisma ?? new PrismaClient();
+const prisma = globalForPrisma.prisma ?? new PrismaClient({
+  datasources: {
+    db: {
+      url: process.env.DATABASE_URL,
+    },
+  },
+});
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
 
@@ -21,6 +27,9 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    // 데이터베이스 연결 확인
+    await prisma.$connect();
 
     const user = await prisma.user.findUnique({
       where: { email }
@@ -68,9 +77,20 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Login error:', error);
+    
+    // 데이터베이스 연결 에러인 경우
+    if (error instanceof Error && error.message.includes('Authentication failed')) {
+      return NextResponse.json(
+        { error: '데이터베이스 연결에 실패했습니다. 관리자에게 문의하세요.' },
+        { status: 503 }
+      );
+    }
+    
     return NextResponse.json(
       { error: '서버 오류가 발생했습니다.' },
       { status: 500 }
     );
+  } finally {
+    await prisma.$disconnect();
   }
 } 
