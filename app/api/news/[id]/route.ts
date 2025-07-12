@@ -10,17 +10,13 @@ const prisma = globalForPrisma.prisma ?? new PrismaClient();
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
 
-type RouteContext = {
-  params: Promise<{ id: string }>;
-};
-
 // 뉴스 상세 조회
 export async function GET(
   request: NextRequest,
-  context: RouteContext
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await context.params;
+    const { id } = await params;
 
     const news = await prisma.news.findUnique({
       where: { id },
@@ -61,7 +57,7 @@ export async function GET(
 // 뉴스 수정 (관리자만)
 export async function PUT(
   request: NextRequest,
-  context: RouteContext
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const authHeader = request.headers.get('authorization');
@@ -82,7 +78,7 @@ export async function PUT(
       );
     }
 
-    const { id } = await context.params;
+    const { id } = await params;
     const { title, content, categoryId } = await request.json();
 
     if (!title || !content || !categoryId) {
@@ -137,7 +133,7 @@ export async function PUT(
 // 뉴스 삭제 (관리자만)
 export async function DELETE(
   request: NextRequest,
-  context: RouteContext
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const authHeader = request.headers.get('authorization');
@@ -158,7 +154,7 @@ export async function DELETE(
       );
     }
 
-    const { id } = await context.params;
+    const { id } = await params;
 
     const existingNews = await prisma.news.findUnique({
       where: { id }
