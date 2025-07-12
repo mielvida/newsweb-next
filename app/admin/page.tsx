@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 
 interface News {
@@ -26,6 +26,7 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingNews, setEditingNews] = useState<News | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   // 폼 상태
   const [formData, setFormData] = useState({
@@ -48,26 +49,39 @@ export default function AdminPage() {
     }
   }, []);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
+      setError(null);
       const [newsResponse, categoriesResponse] = await Promise.all([
         fetch('/api/news'),
         fetch('/api/categories')
       ]);
       
+      if (!newsResponse.ok) {
+        throw new Error(`뉴스 로딩 실패: ${newsResponse.status}`);
+      }
+      
+      if (!categoriesResponse.ok) {
+        throw new Error(`카테고리 로딩 실패: ${categoriesResponse.status}`);
+      }
+      
       const newsData = await newsResponse.json();
       const categoriesData = await categoriesResponse.json();
       
       setNews(newsData.news || []);
-      setCategories(categoriesData);
+      setCategories(categoriesData || []);
     } catch (error) {
       console.error('데이터 로딩 오류:', error);
+      setError('데이터를 불러오는데 실패했습니다.');
+      setNews([]);
+      setCategories([]);
     }
-  };
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
 
     try {
       const response = await fetch('/api/auth/login', {
@@ -86,10 +100,11 @@ export default function AdminPage() {
         setIsLoggedIn(true);
         fetchData();
       } else {
-        alert(data.error || '로그인에 실패했습니다.');
+        setError(data.error || '로그인에 실패했습니다.');
       }
     } catch (error) {
-      alert('로그인 중 오류가 발생했습니다.');
+      console.error('로그인 오류:', error);
+      setError('로그인 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }
@@ -101,11 +116,13 @@ export default function AdminPage() {
     setIsLoggedIn(false);
     setNews([]);
     setCategories([]);
+    setError(null);
   };
 
   const handleCreateNews = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
 
     try {
       const response = await fetch('/api/news', {
@@ -125,10 +142,11 @@ export default function AdminPage() {
         setFormData({ title: '', content: '', categoryId: '' });
         fetchData();
       } else {
-        alert(data.error || '뉴스 작성에 실패했습니다.');
+        setError(data.error || '뉴스 작성에 실패했습니다.');
       }
     } catch (error) {
-      alert('뉴스 작성 중 오류가 발생했습니다.');
+      console.error('뉴스 작성 오류:', error);
+      setError('뉴스 작성 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }
@@ -138,6 +156,7 @@ export default function AdminPage() {
     e.preventDefault();
     if (!editingNews) return;
     setLoading(true);
+    setError(null);
 
     try {
       const response = await fetch(`/api/news/${editingNews.id}`, {
@@ -157,10 +176,11 @@ export default function AdminPage() {
         setFormData({ title: '', content: '', categoryId: '' });
         fetchData();
       } else {
-        alert(data.error || '뉴스 수정에 실패했습니다.');
+        setError(data.error || '뉴스 수정에 실패했습니다.');
       }
     } catch (error) {
-      alert('뉴스 수정 중 오류가 발생했습니다.');
+      console.error('뉴스 수정 오류:', error);
+      setError('뉴스 수정 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }
@@ -182,10 +202,11 @@ export default function AdminPage() {
         fetchData();
       } else {
         const data = await response.json();
-        alert(data.error || '뉴스 삭제에 실패했습니다.');
+        setError(data.error || '뉴스 삭제에 실패했습니다.');
       }
     } catch (error) {
-      alert('뉴스 삭제 중 오류가 발생했습니다.');
+      console.error('뉴스 삭제 오류:', error);
+      setError('뉴스 삭제 중 오류가 발생했습니다.');
     }
   };
 
@@ -194,7 +215,7 @@ export default function AdminPage() {
     setFormData({
       title: news.title,
       content: news.content,
-      categoryId: news.category.id
+      categoryId: news.category?.id || ''
     });
   };
 
@@ -204,7 +225,11 @@ export default function AdminPage() {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('ko-KR');
+    try {
+      return new Date(dateString).toLocaleDateString('ko-KR');
+    } catch (error) {
+      return '날짜 없음';
+    }
   };
 
   if (!isLoggedIn) {
@@ -216,6 +241,11 @@ export default function AdminPage() {
               관리자 로그인
             </h2>
           </div>
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+              {error}
+            </div>
+          )}
           <form className="mt-8 space-y-6" onSubmit={handleLogin}>
             <div className="rounded-md shadow-sm -space-y-px">
               <div>
@@ -294,6 +324,11 @@ export default function AdminPage() {
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
               {editingNews ? '뉴스 수정' : '새 뉴스 작성'}
             </h3>
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+                {error}
+              </div>
+            )}
             <form onSubmit={editingNews ? handleUpdateNews : handleCreateNews}>
               <div className="space-y-4">
                 <div>

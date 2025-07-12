@@ -21,21 +21,36 @@ export default function NewsDetail({ params }: { params: Promise<{ id: string }>
 
   useEffect(() => {
     const getParams = async () => {
-      const resolvedParams = await params;
-      setNewsId(resolvedParams.id);
+      try {
+        const resolvedParams = await params;
+        setNewsId(resolvedParams.id);
+      } catch (error) {
+        console.error('Params error:', error);
+        setError('페이지 로딩에 실패했습니다.');
+        setLoading(false);
+      }
     };
     getParams();
   }, [params]);
 
   const fetchNews = useCallback(async () => {
+    if (!newsId) return;
+    
     try {
+      setError(null);
       const response = await fetch(`/api/news/${newsId}`);
+      
       if (!response.ok) {
-        throw new Error('뉴스를 찾을 수 없습니다.');
+        if (response.status === 404) {
+          throw new Error('뉴스를 찾을 수 없습니다.');
+        }
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+      
       const data = await response.json();
       setNews(data);
     } catch (error) {
+      console.error('뉴스 로딩 오류:', error);
       setError(error instanceof Error ? error.message : '오류가 발생했습니다.');
     } finally {
       setLoading(false);
@@ -49,13 +64,17 @@ export default function NewsDetail({ params }: { params: Promise<{ id: string }>
   }, [newsId, fetchNews]);
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('ko-KR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    try {
+      return new Date(dateString).toLocaleDateString('ko-KR', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (error) {
+      return '날짜 없음';
+    }
   };
 
   if (loading) {
@@ -116,7 +135,7 @@ export default function NewsDetail({ params }: { params: Promise<{ id: string }>
           <div className="p-8 border-b">
             <div className="flex items-center space-x-4 mb-4">
               <span className="inline-block bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full">
-                {news.category.name}
+                {news.category?.name || '카테고리 없음'}
               </span>
               <span className="text-sm text-gray-500">
                 {formatDate(news.createdAt)}
@@ -128,8 +147,8 @@ export default function NewsDetail({ params }: { params: Promise<{ id: string }>
             </h1>
             
             <div className="flex items-center justify-between text-sm text-gray-600">
-              <span>작성자: {news.author.name}</span>
-              <span>조회수: {news.views.toLocaleString()}</span>
+              <span>작성자: {news.author?.name || '작성자 없음'}</span>
+              <span>조회수: {(news.views || 0).toLocaleString()}</span>
             </div>
           </div>
 
