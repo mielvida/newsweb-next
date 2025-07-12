@@ -4,10 +4,14 @@ import jwt from 'jsonwebtoken';
 
 const prisma = new PrismaClient();
 
+type RouteContext = {
+  params: Promise<{ id: string }>;
+};
+
 // 뉴스 상세 조회
 export async function GET(
   request: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  context: RouteContext
 ) {
   try {
     const { id } = await context.params;
@@ -22,7 +26,7 @@ export async function GET(
           select: { id: true, name: true }
         }
       }
-    });
+    } as any);
 
     if (!news) {
       return NextResponse.json(
@@ -51,7 +55,7 @@ export async function GET(
 // 뉴스 수정 (관리자만)
 export async function PUT(
   request: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  context: RouteContext
 ) {
   try {
     const authHeader = request.headers.get('authorization');
@@ -108,7 +112,7 @@ export async function PUT(
           select: { id: true, name: true }
         }
       }
-    });
+    } as any);
 
     return NextResponse.json({
       message: '뉴스가 성공적으로 수정되었습니다.',
@@ -127,7 +131,7 @@ export async function PUT(
 // 뉴스 삭제 (관리자만)
 export async function DELETE(
   request: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  context: RouteContext
 ) {
   try {
     const authHeader = request.headers.get('authorization');
