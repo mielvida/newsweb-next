@@ -16,13 +16,16 @@ const prisma = globalForPrisma.prisma ?? new PrismaClient({
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
 
-// 임시 모의 데이터
+// 임시 모의 데이터 (데이터베이스 연결 실패 시 사용)
 const mockCategories = [
   { id: '1', name: '정치' },
   { id: '2', name: '경제' },
   { id: '3', name: '사회' },
   { id: '4', name: '문화' },
-  { id: '5', name: '기술' }
+  { id: '5', name: '기술' },
+  { id: '6', name: '스포츠' },
+  { id: '7', name: '국제' },
+  { id: '8', name: '연예' }
 ];
 
 // 카테고리 목록 조회
@@ -35,14 +38,21 @@ export async function GET() {
       orderBy: { name: 'asc' }
     });
 
+    console.log(`카테고리 조회 성공: ${categories.length}개`);
+
     return NextResponse.json(categories);
 
   } catch (error) {
     console.error('Get categories error:', error);
     
     // 데이터베이스 연결 에러인 경우 모의 데이터 반환
-    if (error instanceof Error && error.message.includes('Authentication failed')) {
-      console.log('데이터베이스 연결 실패, 모의 데이터 반환');
+    if (error instanceof Error && (
+      error.message.includes('Authentication failed') ||
+      error.message.includes('ECONNREFUSED') ||
+      error.message.includes('Unknown database') ||
+      error.message.includes('Connection failed')
+    )) {
+      console.log('데이터베이스 연결 실패, 모의 카테고리 데이터 반환');
       return NextResponse.json(mockCategories);
     }
     
@@ -116,9 +126,13 @@ export async function POST(request: NextRequest) {
     console.error('Create category error:', error);
     
     // 데이터베이스 연결 에러인 경우
-    if (error instanceof Error && error.message.includes('Authentication failed')) {
+    if (error instanceof Error && (
+      error.message.includes('Authentication failed') ||
+      error.message.includes('ECONNREFUSED') ||
+      error.message.includes('Unknown database')
+    )) {
       return NextResponse.json(
-        { error: '데이터베이스 연결에 실패했습니다. 관리자에게 문의하세요.' },
+        { error: '데이터베이스 연결에 실패했습니다. DATABASE_URL을 확인해주세요.' },
         { status: 503 }
       );
     }
