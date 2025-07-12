@@ -2,7 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import jwt from 'jsonwebtoken';
 
-const prisma = new PrismaClient();
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClient | undefined;
+};
+
+const prisma = globalForPrisma.prisma ?? new PrismaClient();
+
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
 
 // 뉴스 목록 조회
 export async function GET(request: NextRequest) {
@@ -29,7 +35,7 @@ export async function GET(request: NextRequest) {
         orderBy: { createdAt: 'desc' },
         skip,
         take: limit
-      }),
+      } as any),
       prisma.news.count({ where })
     ]);
 
@@ -97,7 +103,7 @@ export async function POST(request: NextRequest) {
           select: { name: true }
         }
       }
-    });
+    } as any);
 
     return NextResponse.json({
       message: '뉴스가 성공적으로 작성되었습니다.',

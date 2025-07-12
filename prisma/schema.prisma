@@ -21,8 +21,11 @@ model News {
   authorId    String
   views       Int      @default(0)
   createdAt   DateTime @default(now())
-  category    Category @relation(fields: [categoryId], references: [id])
-  author      User     @relation(fields: [authorId], references: [id])
+  category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([categoryId])
+  @@index([authorId])
 }
 
 model Category {
