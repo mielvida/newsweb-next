@@ -1,0 +1,9 @@
+# Prisma generated files
+app/generated/
+**/prisma/generated/
+**/node_modules/
+.next/
+out/
+dist/
+build/
+*.min.js 

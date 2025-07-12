@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 
 interface News {
@@ -25,13 +25,7 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchNews();
-    fetchCategories();
-    fetchPopularNews();
-  }, [selectedCategory]);
-
-  const fetchNews = async () => {
+  const fetchNews = useCallback(async () => {
     try {
       const url = selectedCategory 
         ? `/api/news?categoryId=${selectedCategory}`
@@ -44,9 +38,9 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedCategory]);
 
-  const fetchCategories = async () => {
+  const fetchCategories = useCallback(async () => {
     try {
       const response = await fetch('/api/categories');
       const data = await response.json();
@@ -54,9 +48,9 @@ export default function Home() {
     } catch (error) {
       console.error('카테고리 로딩 오류:', error);
     }
-  };
+  }, []);
 
-  const fetchPopularNews = async () => {
+  const fetchPopularNews = useCallback(async () => {
     try {
       const response = await fetch('/api/news?limit=5');
       const data = await response.json();
@@ -66,7 +60,13 @@ export default function Home() {
     } catch (error) {
       console.error('인기 뉴스 로딩 오류:', error);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchNews();
+    fetchCategories();
+    fetchPopularNews();
+  }, [fetchNews, fetchCategories, fetchPopularNews]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('ko-KR');

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 
 interface News {
@@ -27,13 +27,7 @@ export default function NewsDetail({ params }: { params: Promise<{ id: string }>
     getParams();
   }, [params]);
 
-  useEffect(() => {
-    if (newsId) {
-      fetchNews();
-    }
-  }, [newsId]);
-
-  const fetchNews = async () => {
+  const fetchNews = useCallback(async () => {
     try {
       const response = await fetch(`/api/news/${newsId}`);
       if (!response.ok) {
@@ -46,7 +40,13 @@ export default function NewsDetail({ params }: { params: Promise<{ id: string }>
     } finally {
       setLoading(false);
     }
-  };
+  }, [newsId]);
+
+  useEffect(() => {
+    if (newsId) {
+      fetchNews();
+    }
+  }, [newsId, fetchNews]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('ko-KR', {
